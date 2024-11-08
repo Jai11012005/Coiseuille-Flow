@@ -10,22 +10,22 @@ def jacobian_eigenvalues():
 
 # Display equations used in the model
 def display_equations():
-    st.write("### Equations Used")
+    st.markdown("### 📘 Equations Used")
     st.latex(r"""
         \frac{d^2u}{dy^2} = -P
     """)
-    st.write("Converted into first-order differential equations:")
+    st.markdown("**Converted into first-order differential equations:**")
     st.latex(r"""
         u_1' = u_2
     """)
     st.latex(r"""
         u_2' = -P
     """)
-    st.write("Analytical solution:")
+    st.markdown("**Analytical solution:**")
     st.latex(r"""
         u(y) = y + \frac{P}{2} \cdot y \cdot (1 - y)
     """)
-    st.write("BVP Finite Difference Method:")
+    st.markdown("**BVP Finite Difference Method:**")
     st.latex(r"""
         A u = b
     """)
@@ -101,19 +101,21 @@ def initial_value(p):
     return closest_u2
 
 # Streamlit app layout
-st.title("Couette-Poiseuille Flow Simulation")
-st.write("This app simulates Couette-Poiseuille flow using finite difference methods and Euler methods.")
+st.title("🌊 Couette-Poiseuille Flow Simulation")
+st.write("Simulate Couette-Poiseuille flow using numerical methods.")
+
 display_equations()
 
 # Display eigenvalues of the Jacobian matrix
-st.write("### Eigenvalues of the Jacobian Matrix")
+st.markdown("### 🧮 Eigenvalues of the Jacobian Matrix")
 eigenvalues = jacobian_eigenvalues()
-st.write(f"Eigenvalues: {eigenvalues}")
+st.write(f"**Eigenvalues:** {eigenvalues}")
 
-# User inputs
-P = st.slider("Pressure Gradient (P)", min_value=-2.0, max_value=10.0, step=0.5, value=2.0)
-N = st.slider("Number of Grid Points (N)", min_value=10, max_value=200, step=10, value=100)
-h = st.slider("Step Size for IVP (h)", min_value=0.001, max_value=0.1, step=0.001, value=0.01)
+# User inputs with tooltips
+st.sidebar.markdown("## 🔧 Parameters")
+P = st.sidebar.slider("Pressure Gradient (P)", min_value=-2.0, max_value=10.0, step=0.5, value=2.0, help="Adjust the pressure gradient for the simulation.")
+N = st.sidebar.slider("Number of Grid Points (N)", min_value=10, max_value=200, step=10, value=100, help="Number of grid points for the BVP solver.")
+h = st.sidebar.slider("Step Size for IVP (h)", min_value=0.001, max_value=0.1, step=0.001, value=0.01, help="Step size for IVP solver.")
 
 # Calculate solutions
 y_bvp, u_numeric_bvp = solve_couette_poiseuille(P, N)
@@ -124,26 +126,26 @@ u_implicit, _ = IVP_Implicit(P, h)
 # Create y array for IVP solutions
 y_ivp = np.linspace(0, 1, len(u_explicit))
 
-# Plotting results
-fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-ax[0].plot(y_bvp, u_numeric_bvp, 'o', label=f'Numerical (BVP), P={P}', markersize=3)
-ax[0].plot(y_bvp, u_analytic, '-', label='Analytical')
+# Plotting results with enhanced styles
+fig, ax = plt.subplots(1, 3, figsize=(18, 5))
+ax[0].plot(y_bvp, u_numeric_bvp, 'o-', label=f'Numerical (BVP), P={P}', color='teal', markersize=3)
+ax[0].plot(y_bvp, u_analytic, '-', label='Analytical', color='coral')
 ax[0].set_xlabel("y")
 ax[0].set_ylabel("u")
 ax[0].set_title("BVP Solution")
 ax[0].legend()
 ax[0].grid(True)
 
-ax[1].plot(y_ivp, u_explicit, label='Explicit Euler (IVP)')
-ax[1].plot(y_bvp, u_analytic, '-', label='Analytical')
+ax[1].plot(y_ivp, u_explicit, label='Explicit Euler (IVP)', color='blue')
+ax[1].plot(y_bvp, u_analytic, '-', label='Analytical', color='coral')
 ax[1].set_xlabel("y")
 ax[1].set_ylabel("u")
 ax[1].set_title("Explicit Euler Solution (IVP)")
 ax[1].legend()
 ax[1].grid(True)
 
-ax[2].plot(y_ivp, u_implicit, label='Implicit Euler (IVP)')
-ax[2].plot(y_bvp, u_analytic, '-', label='Analytical')
+ax[2].plot(y_ivp, u_implicit, label='Implicit Euler (IVP)', color='green')
+ax[2].plot(y_bvp, u_analytic, '-', label='Analytical', color='coral')
 ax[2].set_xlabel("y")
 ax[2].set_ylabel("u")
 ax[2].set_title("Implicit Euler Solution (IVP)")
@@ -153,6 +155,7 @@ ax[2].grid(True)
 # Display the plot
 st.pyplot(fig)
 
-# Display maximum error for BVP solution
+# Display maximum error for BVP solution as a metric
 max_error_bvp = np.max(np.abs(u_numeric_bvp - u_analytic))
-st.write(f"Maximum absolute error (BVP vs Analytical): {max_error_bvp:.2e}")
+st.markdown("### 📈 Results Summary")
+st.metric(label="Maximum Absolute Error (BVP vs Analytical)", value=f"{max_error_bvp:.2e}")
