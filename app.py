@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
+import plotly.graph_objs as go  # Import plotly graph objects
 
 # Define the Jacobian matrix and calculate eigenvalues
 def jacobian_eigenvalues():
@@ -124,35 +124,34 @@ u_implicit, _ = IVP_Implicit(P, h)
 # Create y array for IVP solutions
 y_ivp = np.linspace(0, 1, len(u_explicit))
 
-# Plotting results
-fig, ax = plt.subplots(1, 3, figsize=(15, 5))
-ax[0].plot(y_bvp, u_numeric_bvp, 'o', label=f'Numerical (BVP), P={P}', markersize=3)
-ax[0].plot(y_bvp, u_analytic, '-', label='Analytical')
-ax[0].set_xlabel("y")
-ax[0].set_ylabel("u")
-ax[0].set_title("BVP Solution")
-ax[0].legend()
-ax[0].grid(True)
+# Create interactive plots with Plotly
+fig = go.Figure()
 
-ax[1].plot(y_ivp, u_explicit, label='Explicit Euler (IVP)')
-ax[1].plot(y_bvp, u_analytic, '-', label='Analytical')
-ax[1].set_xlabel("y")
-ax[1].set_ylabel("u")
-ax[1].set_title("Explicit Euler Solution (IVP)")
-ax[1].legend()
-ax[1].grid(True)
+# BVP Solution Plot
+fig.add_trace(go.Scatter(x=y_bvp, y=u_numeric_bvp, mode='lines+markers', name='Numerical (BVP)', marker=dict(size=5)))
+fig.add_trace(go.Scatter(x=y_bvp, y=u_analytic, mode='lines', name='Analytical'))
 
-ax[2].plot(y_ivp, u_implicit, label='Implicit Euler (IVP)')
-ax[2].plot(y_bvp, u_analytic, '-', label='Analytical')
-ax[2].set_xlabel("y")
-ax[2].set_ylabel("u")
-ax[2].set_title("Implicit Euler Solution (IVP)")
-ax[2].legend()
-ax[2].grid(True)
+# Explicit Euler Solution Plot
+fig.add_trace(go.Scatter(x=y_ivp, y=u_explicit, mode='lines+markers', name='Explicit Euler (IVP)', marker=dict(size=5)))
 
-# Display the plot
-st.pyplot(fig)
+# Implicit Euler Solution Plot
+fig.add_trace(go.Scatter(x=y_ivp, y=u_implicit, mode='lines+markers', name='Implicit Euler (IVP)', marker=dict(size=5)))
 
-# Display maximum error for BVP solution
+# Configure the layout of the interactive plot
+fig.update_layout(
+    title="Solutions for Couette-Poiseuille Flow",
+    xaxis_title="y",
+    yaxis_title="u",
+    hovermode="x unified",
+    template="plotly_dark"
+)
+
+# Display the interactive Plotly graph
+st.plotly_chart(fig)
+
+# Display maximum error for BVP solution with larger, green text
 max_error_bvp = np.max(np.abs(u_numeric_bvp - u_analytic))
-st.write(f"Maximum absolute error (BVP vs Analytical): {max_error_bvp:.2e}")
+st.markdown(
+    f"<span style='color:green; font-size:20px;'>Maximum absolute error (BVP vs Analytical): {max_error_bvp:.2e}</span>",
+    unsafe_allow_html=True
+)
